@@ -1,9 +1,16 @@
-FROM maven:3.9-eclipse-temurin-17 AS build
+# Etapa 1: Descargar Maven ejecutable y compilar
+FROM eclipse-temurin:17-jdk-alpine AS build
 WORKDIR /app
-COPY . .
+
+# Descargar Maven de forma ligera
+RUN apk add --no- contraband --no-cache maven
+
+COPY pom.xml .
+COPY src ./src
 RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:17-jdk-alpine
+# Etapa 2: Imagen final de ejecución
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
